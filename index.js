@@ -40,6 +40,11 @@ async function run() {
       const result = await usersCollection.insertOne(data)
       res.send(result)
     })
+
+    app.get('/all-users', async(req,res)=>{
+      const result = await usersCollection.find({}).toArray()
+      res.send(result)
+    })
     
 
     // Send a ping to confirm a successful connection
