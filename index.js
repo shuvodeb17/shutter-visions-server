@@ -29,6 +29,17 @@ async function run() {
     const usersCollection = client.db('visionsDB').collection('users')
 
 
+    // user collection
+    app.post('/users', async (req, res) => {
+      const data = req.body;
+      const query = { email: data.email }
+      const existingUser = await usersCollection.findOne(query)
+      if (existingUser) {
+        return res.send({ message: 'User already exits' })
+      }
+      const result = await usersCollection.insertOne(data)
+      res.send(result)
+    })
     
 
     // Send a ping to confirm a successful connection
