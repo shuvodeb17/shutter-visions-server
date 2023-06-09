@@ -51,17 +51,17 @@ async function run() {
 
 
     // make admin
-   /*  app.patch('/users/admin/:id', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) }
-      const updateDoc = {
-        $set: {
-          role: 'admin',
-        }
-      }
-      const result = await usersCollection.updateOne(filter, updateDoc)
-      res.send(result)
-    }) */
+    /*  app.patch('/users/admin/:id', async (req, res) => {
+       const id = req.params.id;
+       const filter = { _id: new ObjectId(id) }
+       const updateDoc = {
+         $set: {
+           role: 'admin',
+         }
+       }
+       const result = await usersCollection.updateOne(filter, updateDoc)
+       res.send(result)
+     }) */
 
     /* app.get('/users/admin/:id',async(req,res)=>{
       const id  = req.params.id;
@@ -75,21 +75,14 @@ async function run() {
       /* if (req.decoded.email !== email) {
         res.send({ admin: false });
       } */
-      /* const query = { email: email };
-      const user = await usersCollection.findOne(query);
-      const result = { admin: user?.role == 'admin' };
-      res.send(result)
-    }) */
-    
+    /* const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    const result = { admin: user?.role == 'admin' };
+    res.send(result)
+  }) */
 
-    // post course
-    app.post('/courses', async(req,res) => {
-      const courses = req.body;
-      const result = await coursesCollection.insertOne(courses);
-      res.send(result)     
-    })
-    
-    
+
+
     // make instructor
     /* app.patch('/users/instructor/:id', async (req, res) => {
       const id = req.params.id;
@@ -104,12 +97,50 @@ async function run() {
     }) */
 
     // check admin instructor 
-    app.get('/users/:email', async(req,res)=>{
+    /* app.get('/users/:email', async(req,res)=>{
       const email = req.params.email;
       const query = {email: email}
       const result = await usersCollection.findOne(query)
       res.send(result)
+    }) */
+
+
+    // post course
+    app.post('/courses', async (req, res) => {
+      const courses = req.body;
+      const result = await coursesCollection.insertOne(courses);
+      res.send(result)
     })
+
+    app.get('/all-courses', async (req, res) => {
+      const result = await coursesCollection.find({}).toArray()
+      res.send(result)
+    })
+
+    app.get('/courses/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const result = await coursesCollection.findOne(filter)
+      res.send(result)
+    })
+
+     app.patch('/updates/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'approved',
+        }
+      }
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+    
+
+
+
+
+
 
 
     // Send a ping to confirm a successful connection
