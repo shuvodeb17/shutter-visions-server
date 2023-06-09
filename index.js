@@ -124,7 +124,7 @@ async function run() {
       res.send(result)
     })
 
-     app.patch('/updates/:id', async (req, res) => {
+    app.patch('/updates/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
@@ -135,8 +135,18 @@ async function run() {
       const result = await coursesCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
-    
 
+    // specific courses
+    app.get('/my-courses', async (req, res) => {
+      let query = {};
+      if (req.query?.instructorEmail) {
+        query = { instructorEmail: req.query.instructorEmail }
+      }
+      const result = await coursesCollection.find(query).toArray()
+      res.send(result)
+    })
+
+   
 
 
 
