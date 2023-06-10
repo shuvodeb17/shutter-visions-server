@@ -28,7 +28,6 @@ async function run() {
     await client.connect();
     const usersCollection = client.db('visionsDB').collection('users')
     const coursesCollection = client.db('visionsDB').collection('courses')
-    const feedbackCollection = client.db('visionsDB').collection('feedback')
 
 
     // user collection
@@ -52,21 +51,21 @@ async function run() {
 
 
     // make admin
-     app.patch('/users/admin/:id', async (req, res) => {
-       const id = req.params.id;
-       const filter = { _id: new ObjectId(id) }
-       const updateDoc = {
-         $set: {
-           role: 'admin',
-         }
-       }
-       const result = await usersCollection.updateOne(filter, updateDoc)
-       res.send(result)
-     })
+    app.patch('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          role: 'admin',
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
 
-    app.get('/users/admin/:id',async(req,res)=>{
-      const id  = req.params.id;
-      const query = {_id: new ObjectId(id)}
+    app.get('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
       const result = await usersCollection.findOne(query)
       res.send(result)
     })
@@ -170,14 +169,33 @@ async function run() {
 
 
     // feedback
-    app.post('/feedback', async(req,res)=>{
-      const feedback = req.body;
-      const result = await feedback.insertOne(feedback).toArray()
+    app.patch('/feedback/:id', async (req, res) => {
+      const feedback = req.body.feedback;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          feedback: `${feedback}`,
+        }
+      }
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+    app.get('/all-feedback', async (req, res) => {
+      const result = await coursesCollection.find().toArray()
+      res.send(result)
+    })
+
+    // deny get data
+    app.get('/all-deny', async (req, res) => {
+      const filter = { status: 'deny' }
+      const result = await coursesCollection.find(filter).toArray()
       res.send(result)
     })
 
 
-    
+
 
 
 
