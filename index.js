@@ -28,6 +28,7 @@ async function run() {
     await client.connect();
     const usersCollection = client.db('visionsDB').collection('users')
     const coursesCollection = client.db('visionsDB').collection('courses')
+    const feedbackCollection = client.db('visionsDB').collection('feedback')
 
 
     // user collection
@@ -163,10 +164,17 @@ async function run() {
           status: 'deny',
         }
       }
-      const result = await coursesCollection.updateOne(filter, updateDoc)
+      const result = await coursesCollection.deleteOne(filter, updateDoc)
       res.send(result)
     })
 
+
+    // feedback
+    app.post('/feedback', async(req,res)=>{
+      const feedback = req.body;
+      const result = await feedback.insertOne(feedback).toArray()
+      res.send(result)
+    })
 
 
     
