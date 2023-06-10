@@ -51,7 +51,7 @@ async function run() {
 
 
     // make admin
-    /*  app.patch('/users/admin/:id', async (req, res) => {
+     app.patch('/users/admin/:id', async (req, res) => {
        const id = req.params.id;
        const filter = { _id: new ObjectId(id) }
        const updateDoc = {
@@ -61,14 +61,14 @@ async function run() {
        }
        const result = await usersCollection.updateOne(filter, updateDoc)
        res.send(result)
-     }) */
+     })
 
-    /* app.get('/users/admin/:id',async(req,res)=>{
+    app.get('/users/admin/:id',async(req,res)=>{
       const id  = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await usersCollection.findOne(query)
       res.send(result)
-    }) */
+    })
 
     /* app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
@@ -84,7 +84,7 @@ async function run() {
 
 
     // make instructor
-    /* app.patch('/users/instructor/:id', async (req, res) => {
+    app.patch('/users/instructor/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
@@ -94,7 +94,7 @@ async function run() {
       }
       const result = await usersCollection.updateOne(filter, updateDoc)
       res.send(result)
-    }) */
+    })
 
     // check admin instructor 
     /* app.get('/users/:email', async(req,res)=>{
@@ -124,6 +124,7 @@ async function run() {
       res.send(result)
     })
 
+    // approved 
     app.patch('/updates/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -146,9 +147,29 @@ async function run() {
       res.send(result)
     })
 
-   
+    // approved course
+    app.get('/all-classes', async (req, res) => {
+      const filter = { status: 'approved' }
+      const result = await coursesCollection.find(filter).toArray()
+      res.send(result)
+    })
+
+    // deny single
+    app.patch('/deny/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'deny',
+        }
+      }
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
 
 
+
+    
 
 
 
