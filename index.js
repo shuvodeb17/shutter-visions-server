@@ -164,7 +164,7 @@ async function run() {
           status: 'deny',
         }
       }
-      const result = await coursesCollection.deleteOne(filter, updateDoc)
+      const result = await coursesCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
 
