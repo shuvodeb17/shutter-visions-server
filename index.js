@@ -230,6 +230,22 @@ async function run() {
 
 
 
+    // seats - 1
+    app.patch('/payments/:id', async (req, res) => {
+      const seats = req.body.seats;
+      console.log(seats)
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          seats: `${seats - 1}`,
+        }
+      }
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
