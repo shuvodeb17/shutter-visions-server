@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
     const usersCollection = client.db('visionsDB').collection('users')
     const coursesCollection = client.db('visionsDB').collection('courses')
+    const paymentsCollection = client.db('visionsDB').collection('payments')
 
 
     // user collection
@@ -198,7 +199,7 @@ async function run() {
 
     // const create payment intent 
     app.post('/create-payment-intent', async (req, res) => {
-      const {price}  = req.body;
+      const { price } = req.body;
       const amount = parseInt(price * 100);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -210,6 +211,12 @@ async function run() {
       });
     })
 
+    // save payments data to database
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const result = await paymentsCollection.insertOne(payment)
+      res.send(result)
+    })
 
 
 
