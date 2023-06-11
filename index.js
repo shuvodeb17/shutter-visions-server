@@ -218,6 +218,16 @@ async function run() {
       res.send(result)
     })
 
+    // payments specific user
+    app.get('/payments-details-specific', async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
+      }
+      const result = await paymentsCollection.find(query).toArray()
+      res.send(result)
+    })
+
 
 
 
