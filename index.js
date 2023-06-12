@@ -156,104 +156,116 @@ async function run() {
       res.send(result)
     })
 
-    // deny single
-    app.patch('/deny/:id', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) }
-      const updateDoc = {
-        $set: {
-          status: 'deny',
-        }
+    // popular classes
+    app.get('/popular-classes', async (req, res) => {
+      const query = {};
+      const options = {
+        sort: {"enrolled" : -1}
+    };
+    const result = await coursesCollection.find(query,options).toArray()
+    res.send(result)
+  })
+
+
+  // deny single
+  app.patch('/deny/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) }
+    const updateDoc = {
+      $set: {
+        status: 'deny',
       }
-      const result = await coursesCollection.updateOne(filter, updateDoc)
-      res.send(result)
-    })
+    }
+    const result = await coursesCollection.updateOne(filter, updateDoc)
+    res.send(result)
+  })
 
 
-    // feedback
-    app.patch('/feedback/:id', async (req, res) => {
-      const feedback = req.body.feedback;
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) }
-      const updateDoc = {
-        $set: {
-          feedback: `${feedback}`,
-        }
+  // feedback
+  app.patch('/feedback/:id', async (req, res) => {
+    const feedback = req.body.feedback;
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) }
+    const updateDoc = {
+      $set: {
+        feedback: `${feedback}`,
       }
-      const result = await coursesCollection.updateOne(filter, updateDoc)
-      res.send(result)
-    })
+    }
+    const result = await coursesCollection.updateOne(filter, updateDoc)
+    res.send(result)
+  })
 
-    app.get('/all-feedback', async (req, res) => {
-      const result = await coursesCollection.find().toArray()
-      res.send(result)
-    })
+  app.get('/all-feedback', async (req, res) => {
+    const result = await coursesCollection.find().toArray()
+    res.send(result)
+  })
 
-    // deny get data
-    app.get('/all-deny', async (req, res) => {
-      const filter = { status: 'deny' }
-      const result = await coursesCollection.find(filter).toArray()
-      res.send(result)
-    })
+  // deny get data
+  app.get('/all-deny', async (req, res) => {
+    const filter = { status: 'deny' }
+    const result = await coursesCollection.find(filter).toArray()
+    res.send(result)
+  })
 
 
-    // const create payment intent 
-    app.post('/create-payment-intent', async (req, res) => {
-      const { price } = req.body;
-      const amount = parseInt(price * 100);
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: "usd",
-        payment_method_types: ['card']
-      });
-      res.send({
-        clientSecret: paymentIntent.client_secret,
-      });
-    })
+  // const create payment intent 
+  app.post('/create-payment-intent', async (req, res) => {
+    const { price } = req.body;
+    const amount = parseInt(price * 100);
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: "usd",
+      payment_method_types: ['card']
+    });
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  })
 
-    // save payments data to database
-    app.post('/payments', async (req, res) => {
-      const payment = req.body;
-      const result = await paymentsCollection.insertOne(payment)
-      res.send(result)
-    })
+  // save payments data to database
+  app.post('/payments', async (req, res) => {
+    const payment = req.body;
+    const result = await paymentsCollection.insertOne(payment)
+    res.send(result)
+  })
 
-    // payments specific user
-    app.get('/payments-details-specific', async (req, res) => {
-      let query = {};
-      if (req.query?.email) {
-        query = { email: req.query.email }
+  // payments specific user
+  app.get('/payments-details-specific', async (req, res) => {
+    let query = {};
+    if (req.query?.email) {
+      query = { email: req.query.email }
+    }
+    const result = await paymentsCollection.find(query).toArray()
+    res.send(result)
+  })
+
+
+
+  // seats - 1, enroll + 1
+  app.patch('/payments/:id', async (req, res) => {
+    const seats = req.body.seats;
+    const enrolled = req.body.enrolled;
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) }
+    const updateDoc = {
+      $set: {
+        seats: seats - 1,
+        enrolled: parseInt(enrolled + 1),
       }
-      const result = await paymentsCollection.find(query).toArray()
-      res.send(result)
-    })
+    }
+    const result = await coursesCollection.updateOne(filter, updateDoc)
+    res.send(result)
+  })
 
 
 
-    // seats - 1
-    app.patch('/payments/:id', async (req, res) => {
-      const seats = req.body.seats;
-      console.log(seats)
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) }
-      const updateDoc = {
-        $set: {
-          seats: `${seats - 1}`,
-        }
-      }
-      const result = await coursesCollection.updateOne(filter, updateDoc)
-      res.send(result)
-    })
-
-
-
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("database connected");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+  // Send a ping to confirm a successful connection
+  await client.db("admin").command({ ping: 1 });
+  console.log("database connected");
+} finally {
+  // Ensures that the client will close when you finish/error
+  // await client.close();
+}
 }
 run().catch(console.dir);
 
