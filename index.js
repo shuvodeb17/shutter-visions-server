@@ -81,17 +81,6 @@ async function run() {
       res.send(result)
     })
 
-    /* app.get('/users/admin/:email', async (req, res) => {
-      const email = req.params.email;
-      /* if (req.decoded.email !== email) {
-        res.send({ admin: false });
-      } */
-    /* const query = { email: email };
-    const user = await usersCollection.findOne(query);
-    const result = { admin: user?.role == 'admin' };
-    res.send(result)
-  }) */
-
 
 
     // make instructor
@@ -107,13 +96,6 @@ async function run() {
       res.send(result)
     })
 
-    // check admin instructor 
-    /* app.get('/users/:email', async(req,res)=>{
-      const email = req.params.email;
-      const query = {email: email}
-      const result = await usersCollection.findOne(query)
-      res.send(result)
-    }) */
 
 
     // post course
@@ -167,7 +149,7 @@ async function run() {
 
     // popular classes
     app.get('/popular-classes', async (req, res) => {
-      const query = {};
+      const query = { status: 'approved' }
       const options = {
         sort: {"enrolled" : -1}
     };
