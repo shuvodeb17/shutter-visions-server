@@ -49,6 +49,15 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/specific-user', async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
+      }
+      const result = await usersCollection.find(query).toArray()
+      res.send(result)
+    })
+
 
 
 
@@ -162,7 +171,7 @@ async function run() {
       const options = {
         sort: {"enrolled" : -1}
     };
-    const result = await coursesCollection.find(query,options).toArray()
+    const result = await coursesCollection.find(query,options).limit(6).toArray()
     res.send(result)
   })
 
