@@ -26,10 +26,11 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const usersCollection = client.db('visionsDB').collection('users')
     const coursesCollection = client.db('visionsDB').collection('courses')
     const paymentsCollection = client.db('visionsDB').collection('payments')
+    const selectedClassesCollection = client.db('visionsDB').collection('selected')
 
 
     // user collection
@@ -151,112 +152,161 @@ async function run() {
     app.get('/popular-classes', async (req, res) => {
       const query = { status: 'approved' }
       const options = {
-        sort: {"enrolled" : -1}
-    };
-    const result = await coursesCollection.find(query,options).limit(6).toArray()
-    res.send(result)
-  })
+        sort: { "enrolled": -1 }
+      };
+      const result = await coursesCollection.find(query, options).limit(6).toArray()
+      res.send(result)
+    })
 
 
-  // deny single
-  app.patch('/deny/:id', async (req, res) => {
-    const id = req.params.id;
-    const filter = { _id: new ObjectId(id) }
-    const updateDoc = {
-      $set: {
-        status: 'deny',
+    app.get('/top-instructor', async (req, res) => {
+      const result = await coursesCollection.find().limit(6).toArray()
+      res.send(result)
+    })
+
+    // deny single
+    app.patch('/deny/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'deny',
+        }
       }
-    }
-    const result = await coursesCollection.updateOne(filter, updateDoc)
-    res.send(result)
-  })
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
 
 
-  // feedback
-  app.patch('/feedback/:id', async (req, res) => {
-    const feedback = req.body.feedback;
-    const id = req.params.id;
-    const filter = { _id: new ObjectId(id) }
-    const updateDoc = {
-      $set: {
-        feedback: `${feedback}`,
+    // feedback
+    app.patch('/feedback/:id', async (req, res) => {
+      const feedback = req.body.feedback;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          feedback: `${feedback}`,
+        }
       }
-    }
-    const result = await coursesCollection.updateOne(filter, updateDoc)
-    res.send(result)
-  })
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
 
-  app.get('/all-feedback', async (req, res) => {
-    const result = await coursesCollection.find().toArray()
-    res.send(result)
-  })
+    app.get('/all-feedback', async (req, res) => {
+      const result = await coursesCollection.find().toArray()
+      res.send(result)
+    })
 
-  // deny get data
-  app.get('/all-deny', async (req, res) => {
-    const filter = { status: 'deny' }
-    const result = await coursesCollection.find(filter).toArray()
-    res.send(result)
-  })
-
-
-  // const create payment intent 
-  app.post('/create-payment-intent', async (req, res) => {
-    const { price } = req.body;
-    const amount = parseInt(price * 100);
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: "usd",
-      payment_method_types: ['card']
-    });
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
-  })
-
-  // save payments data to database
-  app.post('/payments', async (req, res) => {
-    const payment = req.body;
-    const result = await paymentsCollection.insertOne(payment)
-    res.send(result)
-  })
-
-  // payments specific user
-  app.get('/payments-details-specific', async (req, res) => {
-    let query = {};
-    if (req.query?.email) {
-      query = { email: req.query.email }
-    }
-    const result = await paymentsCollection.find(query).toArray()
-    res.send(result)
-  })
+    // deny get data
+    app.get('/all-deny', async (req, res) => {
+      const filter = { status: 'deny' }
+      const result = await coursesCollection.find(filter).toArray()
+      res.send(result)
+    })
 
 
+    // const create payment intent 
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ['card']
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    })
 
-  // seats - 1, enroll + 1
-  app.patch('/payments/:id', async (req, res) => {
-    const seats = req.body.seats;
-    const enrolled = req.body.enrolled;
-    const id = req.params.id;
-    const filter = { _id: new ObjectId(id) }
-    const updateDoc = {
-      $set: {
-        seats: seats - 1,
-        enrolled: parseInt(enrolled + 1),
+    // save payments data to database
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const result = await paymentsCollection.insertOne(payment)
+      res.send(result)
+    })
+
+    // payments specific user
+    app.get('/payments-details-specific', async (req, res) => {
+      let query = {};
+      const options = {
+        sort: { "date": -1 }
+      };
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
-    }
-    const result = await coursesCollection.updateOne(filter, updateDoc)
-    res.send(result)
-  })
+      const result = await paymentsCollection.find(query, options).toArray()
+      res.send(result)
+    })
 
 
 
-  // Send a ping to confirm a successful connection
-  await client.db("admin").command({ ping: 1 });
-  console.log("database connected");
-} finally {
-  // Ensures that the client will close when you finish/error
-  // await client.close();
-}
+    // seats - 1, enroll + 1
+    app.patch('/payments/:id', async (req, res) => {
+      const seats = req.body.seats;
+      const enrolled = req.body.enrolled;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          seats: seats - 1,
+          enrolled: parseInt(enrolled + 1),
+        }
+      }
+      const result = await coursesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+    // selected class
+    app.post('/selected-course', async (req, res) => {
+      const allCourses = req.body;
+      delete allCourses._id;
+      const result = await selectedClassesCollection.insertOne(allCourses)
+      res.send(result)
+    })
+
+    app.get('/course-select', async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
+      }
+      const result = await selectedClassesCollection.find(query).toArray()
+      res.send(result)
+    })
+
+     app.patch('/selected-payments/:id', async (req, res) => {
+      const seats = req.body.seats;
+      const enrolled = req.body.enrolled;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          seats: seats - 1,
+          enrolled: parseInt(enrolled + 1),
+        }
+      }
+      const result = await selectedClassesCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+   
+
+    // delete id
+    app.delete('/select-item-delete/:id', async(req,res) =>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const result = await selectedClassesCollection.deleteOne(filter)
+      res.send(result)
+    })
+
+
+
+    // Send a ping to confirm a successful connection
+    // await client.db("admin").command({ ping: 1 });
+    console.log("database connected");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    // await client.close();
+  }
 }
 run().catch(console.dir);
 
