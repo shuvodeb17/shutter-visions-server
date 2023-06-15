@@ -159,8 +159,15 @@ async function run() {
     })
 
 
+    // top instructor
     app.get('/top-instructor', async (req, res) => {
       const result = await coursesCollection.find().limit(6).toArray()
+      res.send(result)
+    })
+
+    // instructor
+    app.get('/instructor-all', async (req, res) => {
+      const result = await coursesCollection.find().toArray()
       res.send(result)
     })
 
@@ -274,7 +281,7 @@ async function run() {
       res.send(result)
     })
 
-     app.patch('/selected-payments/:id', async (req, res) => {
+    app.patch('/selected-payments/:id', async (req, res) => {
       const seats = req.body.seats;
       const enrolled = req.body.enrolled;
       const id = req.params.id;
@@ -288,12 +295,12 @@ async function run() {
       const result = await selectedClassesCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
-   
+
 
     // delete id
-    app.delete('/select-item-delete/:id', async(req,res) =>{
+    app.delete('/select-item-delete/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) }
       const result = await selectedClassesCollection.deleteOne(filter)
       res.send(result)
     })
